@@ -6,7 +6,6 @@
   <title>Kalkulator cijene lamperije</title>
   <link rel="stylesheet" href="lamperija_responsive.css">
   <style>
-    /* Reset & root variables */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --primary-red: #e71c34;
@@ -67,7 +66,6 @@
     }
     button.primary { background: var(--primary-red); color: #fff; border: none; font-weight: bold; }
     button.secondary { background: #fff; color: var(--primary-red); border: 1px solid var(--primary-red); margin-bottom: 1rem; }
-    /* Responsive */
     @media (max-width: 480px) {
       :root { --card-padding: 1rem; }
       .card { padding: var(--card-padding); }
@@ -91,6 +89,7 @@
           <th>#</th>
           <th>Duljina</th>
           <th>Jedinica</th>
+          <th>Kom</th>
           <th></th>
         </tr>
       </thead>
@@ -98,15 +97,15 @@
         <tr>
           <td>1</td>
           <td><input type="number" class="length" min="0" placeholder="npr. 240"></td>
-          <td>
-            <select class="unit"><option value="cm">cm</option><option value="m">m</option></select>
-          </td>
+          <td><select class="unit"><option value="cm">cm</option><option value="m">m</option></select></td>
+          <td><input type="number" class="qty" min="1" value="1"></td>
           <td class="remove"><button class="removeBtn">&#10005;</button></td>
         </tr>
       </tbody>
     </table>
     <button id="addRowBtn" class="secondary">Dodaj duljinu</button>
     <div class="results" id="resultsSection">
+      <div><span>Ukupno m duljine (širina x kom):</span><span id="totalLength">0.00</span></div>
       <div><span>Ukupno m²:</span><span id="totalArea">0.00</span></div>
       <div class="total-price"><span>Ukupna cijena:</span><span id="totalPrice">0.00 €</span></div>
     </div>
@@ -114,7 +113,7 @@
   </div>
   <script>
     (function() {
-      const WIDTH = 0.25;
+      const WIDTH = 0.25; // širina daske u metrima
       const BASE_PRICE = 15;
       const MAT_EXTRA = 1;
       const table = document.getElementById('lengthTable');
@@ -123,6 +122,7 @@
       const matCheckbox = document.getElementById('matFinish');
       const totalAreaEl = document.getElementById('totalArea');
       const totalPriceEl = document.getElementById('totalPrice');
+      const totalLengthEl = document.getElementById('totalLength');
 
       function updateIndices() {
         [...table.rows].forEach((row, i) => row.cells[0].textContent = i + 1);
@@ -135,6 +135,7 @@
           <td>${rowCount}</td>
           <td><input type="number" class="length" min="0" placeholder="npr. 240"></td>
           <td><select class="unit"><option value="cm">cm</option><option value="m">m</option></select></td>
+          <td><input type="number" class="qty" min="1" value="1"></td>
           <td class="remove"><button class="removeBtn">&#10005;</button></td>
         `;
         table.appendChild(tr);
@@ -149,16 +150,20 @@
 
       calcBtn.addEventListener('click', () => {
         let totalArea = 0;
+        let totalLength = 0;
         [...table.rows].forEach(row => {
           const lenInput = row.querySelector('.length');
+          const qtyInput = row.querySelector('.qty');
           let length = parseFloat(lenInput.value) || 0;
-          if (length <= 0) return;
+          const qty = parseInt(qtyInput.value) || 1;
           if (row.querySelector('.unit').value === 'cm') length /= 100;
-          totalArea += length * WIDTH;
+          totalArea += length * WIDTH * qty;
+          totalLength += WIDTH * qty;
         });
         const pricePerM2 = BASE_PRICE + (matCheckbox.checked ? MAT_EXTRA : 0);
         const totalPrice = totalArea * pricePerM2;
         totalAreaEl.textContent = totalArea.toFixed(2);
+        totalLengthEl.textContent = totalLength.toFixed(2);
         totalPriceEl.textContent = totalPrice.toFixed(2) + ' €';
       });
     })();
