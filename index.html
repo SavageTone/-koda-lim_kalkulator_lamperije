@@ -32,7 +32,7 @@
       border-radius: 12px;
       box-shadow: 0 4px 12px var(--shadow);
       width: 100%;
-      max-width: 400px;
+      max-width: 500px;
       padding: var(--card-padding);
     }
     .card h1 {
@@ -58,6 +58,7 @@
     th { font-weight: bold; }
     td.remove { text-align: center; }
     .removeBtn { background: none; border: none; color: var(--primary-red); cursor: pointer; font-size: 1rem; }
+    .perRowSum { font-size: 0.95rem; color: #555; text-align: right; }
     .results { border-top: 1px solid #eee; padding-top: 1rem; margin-bottom: 1rem; }
     .results div { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 1rem; }
     .results .total-price { font-weight: bold; color: var(--primary-red); font-size: 1.1rem; }
@@ -66,14 +67,10 @@
     }
     button.primary { background: var(--primary-red); color: #fff; border: none; font-weight: bold; }
     button.secondary { background: #fff; color: var(--primary-red); border: 1px solid var(--primary-red); margin-bottom: 1rem; }
-    @media (max-width: 480px) {
-      :root { --card-padding: 1rem; }
-      .card { padding: var(--card-padding); }
-      .card h1 { font-size: 1.25rem; }
-      input[type="number"], select { padding: 0.4rem; font-size: 0.9rem; }
-      th, td { padding: 0.4rem; font-size: 0.9rem; }
-      .removeBtn { font-size: 0.9rem; }
-      button.primary, button.secondary { padding: 0.6rem; font-size: 0.95rem; }
+    @media (max-width: 540px) {
+      .card { max-width: 100%; }
+      th, td { font-size: 0.9rem; }
+      .perRowSum { font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -90,6 +87,7 @@
           <th>Duljina</th>
           <th>Jedinica</th>
           <th>Kom</th>
+          <th>Ukupna duljina (m)</th>
           <th></th>
         </tr>
       </thead>
@@ -99,14 +97,15 @@
           <td><input type="number" class="length" min="0" placeholder="npr. 240"></td>
           <td><select class="unit"><option value="cm">cm</option><option value="m">m</option></select></td>
           <td><input type="number" class="qty" min="1" value="1"></td>
+          <td class="perRowSum">0.00</td>
           <td class="remove"><button class="removeBtn">&#10005;</button></td>
         </tr>
       </tbody>
     </table>
     <button id="addRowBtn" class="secondary">Dodaj duljinu</button>
     <div class="results" id="resultsSection">
-      <div><span>Ukupno m duljine (širina x kom):</span><span id="totalLength">0.00</span></div>
-      <div><span>Ukupno m²:</span><span id="totalArea">0.00</span></div>
+      <div><span>Ukupno duljine dasaka:</span><span id="totalLength">0.00 m</span></div>
+      <div><span>Ukupno m² (pokriveno):</span><span id="totalArea">0.00</span></div>
       <div class="total-price"><span>Ukupna cijena:</span><span id="totalPrice">0.00 €</span></div>
     </div>
     <button id="calcBtn" class="primary">Izračunaj</button>
@@ -128,6 +127,19 @@
         [...table.rows].forEach((row, i) => row.cells[0].textContent = i + 1);
       }
 
+      function updatePerRow() {
+        [...table.rows].forEach(row => {
+          const lenInput = row.querySelector('.length');
+          const qtyInput = row.querySelector('.qty');
+          const perRowSumCell = row.querySelector('.perRowSum');
+          let length = parseFloat(lenInput.value) || 0;
+          const qty = parseInt(qtyInput.value) || 0;
+          if (row.querySelector('.unit').value === 'cm') length /= 100;
+          const sum = (length * qty);
+          perRowSumCell.textContent = sum > 0 ? sum.toFixed(2) : '0.00';
+        });
+      }
+
       addRowBtn.addEventListener('click', () => {
         const rowCount = table.rows.length + 1;
         const tr = document.createElement('tr');
@@ -136,36 +148,46 @@
           <td><input type="number" class="length" min="0" placeholder="npr. 240"></td>
           <td><select class="unit"><option value="cm">cm</option><option value="m">m</option></select></td>
           <td><input type="number" class="qty" min="1" value="1"></td>
+          <td class="perRowSum">0.00</td>
           <td class="remove"><button class="removeBtn">&#10005;</button></td>
         `;
         table.appendChild(tr);
       });
 
+      table.addEventListener('input', function(e) {
+        updatePerRow();
+      });
+      table.addEventListener('change', function(e) {
+        updatePerRow();
+      });
       table.addEventListener('click', e => {
         if (e.target.classList.contains('removeBtn')) {
           e.target.closest('tr').remove();
           updateIndices();
+          updatePerRow();
         }
       });
 
       calcBtn.addEventListener('click', () => {
-        let totalArea = 0;
         let totalLength = 0;
         [...table.rows].forEach(row => {
           const lenInput = row.querySelector('.length');
           const qtyInput = row.querySelector('.qty');
           let length = parseFloat(lenInput.value) || 0;
-          const qty = parseInt(qtyInput.value) || 1;
+          const qty = parseInt(qtyInput.value) || 0;
           if (row.querySelector('.unit').value === 'cm') length /= 100;
-          totalArea += length * WIDTH * qty;
-          totalLength += WIDTH * qty;
+          totalLength += (length * qty);
         });
+        const totalArea = totalLength * WIDTH;
         const pricePerM2 = BASE_PRICE + (matCheckbox.checked ? MAT_EXTRA : 0);
         const totalPrice = totalArea * pricePerM2;
         totalAreaEl.textContent = totalArea.toFixed(2);
-        totalLengthEl.textContent = totalLength.toFixed(2);
+        totalLengthEl.textContent = totalLength.toFixed(2) + ' m';
         totalPriceEl.textContent = totalPrice.toFixed(2) + ' €';
       });
+
+      // Prikaz izračuna duljina odmah kod unosa (UX bonus)
+      updatePerRow();
     })();
   </script>
 </body>
