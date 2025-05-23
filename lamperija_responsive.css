@@ -1,0 +1,172 @@
+/* lamperija_responsive.css */
+
+/* Reset and root variables */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+:root {
+  --primary-red: #e71c34;
+  --primary-text: #333;
+  --input-border: #ccc;
+  --input-focus: #e71c34;
+  --bg-card: #fff;
+  --shadow: rgba(0, 0, 0, 0.1);
+  --card-padding: 1.5rem;
+  font-size: 16px;
+}
+
+/* Body layout */
+body {
+  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+  color: var(--primary-text);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1rem;
+  min-height: 100vh;
+}
+
+/* Card container */
+.card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow);
+  width: 100%;
+  max-width: 400px;
+  padding: var(--card-padding);
+  margin: auto;
+}
+
+/* Title */
+.card h1 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--primary-red);
+  text-align: center;
+}
+
+/* Form group */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.form-group input[type="checkbox"] {
+  margin-right: 0.5rem;
+  accent-color: var(--primary-red);
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+th, td {
+  padding: 0.5rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+th {
+  font-weight: bold;
+}
+
+td.remove {
+  text-align: center;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--primary-red);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+/* Add row button */
+button.secondary {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--primary-red);
+  border: 1px solid var(--primary-red);
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+/* Results section */
+.results {
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.results div {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.results .total-price {
+  font-weight: bold;
+  color: var(--primary-red);
+  font-size: 1.1rem;
+}
+
+/* Calculate button */
+button.primary {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  background: var(--primary-red);
+  color: #fff;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+button.primary:hover {
+  background: #c1172a;
+  transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  :root {
+    --card-padding: 1rem;
+  }
+  .card {
+    padding: var(--card-padding);
+  }
+  .card h1 {
+    font-size: 1.25rem;
+  }
+  input[type="number"], select {
+    padding: 0.4rem;
+    font-size: 0.9rem;
+  }
+  th, td {
+    padding: 0.4rem;
+    font-size: 0.9rem;
+  }
+  .removeBtn {
+    font-size: 0.9rem;
+  }
+  button.primary, button.secondary {
+    padding: 0.6rem;
+    font-size: 0.95rem;
+  }
+}
