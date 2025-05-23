@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator cijene lamperije</title>
+  <style>
+    :root {
+      --primary-red: #e71c34;
+      --primary-text: #333;
+      --input-border: #ccc;
+      --input-focus: #e71c34;
+      --bg-card: #fff;
+      --shadow: rgba(0, 0, 0, 0.1);
+      font-size: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: #f5f5f5;
+      font-family: Arial, sans-serif;
+      color: var(--primary-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 1rem;
+    }
+    .card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px var(--shadow);
+      width: 100%;
+      max-width: 400px;
+      padding: 1.5rem;
+    }
+    .card h1 {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+      color: var(--primary-red);
+      text-align: center;
+    }
+    .form-group { margin-bottom: 1rem; }
+    label { display: flex; align-items: center; font-weight: bold; }
+    input[type="number"], select {
+      width: 100%; padding: 0.5rem; border: 1px solid var(--input-border);
+      border-radius: 4px; font-size: 1rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--input-focus); }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 0.5rem; }
+    th, td { padding: 6px; text-align: left; }
+    th { font-weight: bold; }
+    td.remove { text-align: center; }
+    td.remove button { background: none; border: none; color: var(--primary-red); cursor: pointer; }
+    .results { border-top: 1px solid #eee; padding-top: 0.75rem; margin-bottom: 1rem; }
+    .results div { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem; }
+    .results .total-price { font-weight: bold; color: var(--primary-red); font-size: 1.1rem; }
+    button.primary { width: 100%; padding: 0.75rem; background: var(--primary-red); color: #fff; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+    button.secondary { background: #fff; color: var(--primary-red); border: 1px solid var(--primary-red); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Kalkulator cijene lamperije</h1>
+    <div class="form-group">
+      <label><input type="checkbox" id="matFinish"> Mat završna obrada (+1 €/m²)</label>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Duljina</th>
+          <th>Jedinica</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="lengthTable">
+        <tr>
+          <td>1</td>
+          <td><input type="number" class="length" min="0" placeholder="npr. 240" /></td>
+          <td>
+            <select class="unit">
+              <option value="cm">cm</option>
+              <option value="m">m</option>
+            </select>
+          </td>
+          <td class="remove"><button class="removeBtn">&#10005;</button></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+      <button id="addRowBtn" class="secondary">Dodaj duljinu</button>
+    </div>
+    <div class="results" id="resultsSection">
+      <div><span>Ukupno m²:</span><span id="totalArea">0.00</span></div>
+      <div class="total-price"><span>Ukupna cijena:</span><span id="totalPrice">0.00 €</span></div>
+    </div>
+    <button id="calcBtn" class="primary">Izračunaj</button>
+  </div>
+
+  <script>
+    (function(){
+      const WIDTH = 0.25;
+      const BASE_PRICE = 15;
+      const MAT_EXTRA = 1;
+      const table = document.getElementById('lengthTable');
+      const addRowBtn = document.getElementById('addRowBtn');
+      const calcBtn = document.getElementById('calcBtn');
+      const matCheckbox = document.getElementById('matFinish');
+      const totalAreaEl = document.getElementById('totalArea');
+      const totalPriceEl = document.getElementById('totalPrice');
+
+      function updateIndices(){
+        [...table.rows].forEach((row,i)=> row.cells[0].textContent = i+1);
+      }
+
+      addRowBtn.addEventListener('click', ()=>{
+        const rowCount = table.rows.length + 1;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${rowCount}</td>
+          <td><input type="number" class="length" min="0" placeholder="npr. 240" /></td>
+          <td><select class="unit"><option value="cm">cm</option><option value="m">m</option></select></td>
+          <td class="remove"><button class="removeBtn">&#10005;</button></td>
+        `;
+        table.appendChild(tr);
+      });
+
+      table.addEventListener('click', e=>{
+        if(e.target.classList.contains('removeBtn')){
+          e.target.closest('tr').remove();
+          updateIndices();
+        }
+      });
+
+      calcBtn.addEventListener('click', ()=>{
+        let totalArea = 0;
+        [...table.rows].forEach(row=>{
+          const lenInput = row.querySelector('.length');
+          const unit = row.querySelector('.unit').value;
+          let length = parseFloat(lenInput.value) || 0;
+          if(length <=0) return;
+          // convert to meters
+          if(unit === 'cm') length = length/100;
+          totalArea += (length * WIDTH);
+        });
+        const pricePerM2 = BASE_PRICE + (matCheckbox.checked?MAT_EXTRA:0);
+        const totalPrice = totalArea * pricePerM2;
+        totalAreaEl.textContent = totalArea.toFixed(2);
+        totalPriceEl.textContent = totalPrice.toFixed(2) + ' €';
+      });
+    })();
+  </script>
+</body>
+</html>
